@@ -1,0 +1,17 @@
+# Go build/test output
+/project/livegrow/bin/
+/project/livegrow/coverage.out
+/project/livegrow/*.test
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Tool/editor files
+.DS_Store
+.idea/
+.vscode/
+
+# Generated local reports
+/records/generated/
