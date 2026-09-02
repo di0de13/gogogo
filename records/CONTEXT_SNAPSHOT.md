@@ -31,7 +31,7 @@ Go、MySQL、Redis、Kafka；Outbox、本地事务、幂等消费、重试/死�
 
 ## 当前状态
 
-工作区初始化、`2.1.1 直播间和用户场景`、`2.1.2 礼物订单场景` 已完成，Go 最小程序测试通过。业务基线见 `docs/01-BUSINESS-REQUIREMENTS.md`，订单领域见 `docs/02-ORDER-DOMAIN.md`。由于沙箱限制，运行 Go 命令时使用 `GOCACHE=/private/tmp/livegrow-gocache`。下一步是 `2.1.3 增长实验场景`。
+工作区初始化、`2.1.1 直播间和用户场景`、`2.1.2 礼物订单场景`、`2.1.3 增长实验场景` 已完成，Go 最小程序测试通过。业务基线见 `docs/01-BUSINESS-REQUIREMENTS.md`，订单领域见 `docs/02-ORDER-DOMAIN.md`，增长实验见 `docs/03-GROWTH-EXPERIMENT.md`。由于沙箱限制，运行 Go 命令时使用 `GOCACHE=/private/tmp/livegrow-gocache`。下一步是 `2.2.1 Room、Order、Growth 服务边界`。
 
 ## 业务基线摘要
 
@@ -51,3 +51,13 @@ Go、MySQL、Redis、Kafka；Outbox、本地事务、幂等消费、重试/死�
 - Kafka 采用至少一次投递，消费者用 `event_id`/业务唯一键保证副作用幂等；
 - 可恢复错误重试，超限进入死信；对账任务发现卡单、缺事件和金额不一致；
 - 下一步设计增长实验，不改变订单可靠性主线。
+
+## 增长实验摘要
+
+- 活动生命周期：`DRAFT → PENDING_REVIEW → APPROVED → GRAYING → ACTIVE`，可暂停、回滚或过期；
+- 同一活动版本使用 `hash(campaign_id + user_id)` 稳定分流；
+- 活动总预算和单用户预算均使用整数金额和原子条件更新；
+- 第一版优先 MySQL 作为预算真相，Redis 不承担预算最终一致性；
+- 营收指标消费可靠事件异步聚合，消费者必须幂等且可重放；
+- 回滚只停止未来新分流，不修改历史订单和奖励；
+- AI 生成 JSON 活动草稿，经过 Schema、权限、地区、时间、金额、模拟评估和人工审批后才能灰度。
