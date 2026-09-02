@@ -31,7 +31,7 @@ Go、MySQL、Redis、Kafka；Outbox、本地事务、幂等消费、重试/死�
 
 ## 当前状态
 
-工作区初始化和 `2.1.1 直播间和用户场景` 已完成，Go 最小程序测试通过。业务基线见 `docs/01-BUSINESS-REQUIREMENTS.md`。由于沙箱限制，运行 Go 命令时使用 `GOCACHE=/private/tmp/livegrow-gocache`。下一步是 `2.1.2 礼物订单场景`。
+工作区初始化、`2.1.1 直播间和用户场景`、`2.1.2 礼物订单场景` 已完成，Go 最小程序测试通过。业务基线见 `docs/01-BUSINESS-REQUIREMENTS.md`，订单领域见 `docs/02-ORDER-DOMAIN.md`。由于沙箱限制，运行 Go 命令时使用 `GOCACHE=/private/tmp/livegrow-gocache`。下一步是 `2.1.3 增长实验场景`。
 
 ## 业务基线摘要
 
@@ -41,3 +41,13 @@ Go、MySQL、Redis、Kafka；Outbox、本地事务、幂等消费、重试/死�
 - 最终一致：礼物发放、实时营收看板、热度和在线人数；
 - AI 边界：只生成候选活动配置，必须经过 Schema、预算、权限、审批和灰度；
 - 非目标：真实支付、真实全球部署、真实用户数据、复杂推荐和完整前端后台。
+
+## 订单领域摘要
+
+- 订单主状态：`CREATED → PROCESSING → SUCCEEDED/FAILED`，处理前可取消；
+- 支付和礼物发放各自维护阶段状态，避免状态语义混杂；
+- `(user_id, idempotency_key)` 唯一，重复请求返回原订单，请求摘要不同则冲突；
+- 订单与 `ORDER_CREATED` Outbox 在同一个 MySQL 本地事务内提交；
+- Kafka 采用至少一次投递，消费者用 `event_id`/业务唯一键保证副作用幂等；
+- 可恢复错误重试，超限进入死信；对账任务发现卡单、缺事件和金额不一致；
+- 下一步设计增长实验，不改变订单可靠性主线。
