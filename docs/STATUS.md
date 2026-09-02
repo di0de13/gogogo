@@ -25,14 +25,17 @@
 - 产出增长实验文档：`docs/03-GROWTH-EXPERIMENT.md`。
 - 完成 `2.2.1`：明确 Room、Order、Growth 的职责、数据所有权、API、事件契约、依赖方向和故障隔离；
 - 产出服务边界文档：`docs/04-SERVICE-BOUNDARIES.md`。
+- 完成 `2.2.2`：统一订单、活动和 Outbox 状态机，定义非法迁移、幂等、并发版本和审计规则；
+- 产出状态机文档：`docs/05-STATE-MACHINES.md`；
+- 完成第 2 阶段复盘，复盘规范见 `docs/REVIEW-PROTOCOL.md`，复盘记录见 `records/reviews/PHASE-02-DOMAIN-MODELING.md`。
 
 ## 当前工作单元
 
-`2.2.1 Room、Order、Growth 服务边界`：已完成。
+`2.2.2 关键状态机`：已完成。
 
 ## 下一单元
 
-`2.2.2 关键状态机`：统一订单、活动和 Outbox 的状态迁移规则，并转化为可测试接口。
+`2.3.1 30 秒、2 分钟、5 分钟项目讲解`：将第 2 阶段设计压缩成面试可用叙事，并开始转化为 Go 代码任务。
 
 ## 当前风险
 
