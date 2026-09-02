@@ -31,7 +31,7 @@ Go、MySQL、Redis、Kafka；Outbox、本地事务、幂等消费、重试/死�
 
 ## 当前状态
 
-工作区初始化、`2.1.1 直播间和用户场景`、`2.1.2 礼物订单场景`、`2.1.3 增长实验场景` 已完成，Go 最小程序测试通过。业务基线见 `docs/01-BUSINESS-REQUIREMENTS.md`，订单领域见 `docs/02-ORDER-DOMAIN.md`，增长实验见 `docs/03-GROWTH-EXPERIMENT.md`。由于沙箱限制，运行 Go 命令时使用 `GOCACHE=/private/tmp/livegrow-gocache`。下一步是 `2.2.1 Room、Order、Growth 服务边界`。
+工作区初始化、`2.1.1 直播间和用户场景`、`2.1.2 礼物订单场景`、`2.1.3 增长实验场景`、`2.2.1 Room、Order、Growth 服务边界` 已完成，Go 最小程序测试通过。业务基线见 `docs/01-BUSINESS-REQUIREMENTS.md`，订单领域见 `docs/02-ORDER-DOMAIN.md`，增长实验见 `docs/03-GROWTH-EXPERIMENT.md`，服务边界见 `docs/04-SERVICE-BOUNDARIES.md`。由于沙箱限制，运行 Go 命令时使用 `GOCACHE=/private/tmp/livegrow-gocache`。下一步是 `2.2.2 关键状态机`。
 
 ## 业务基线摘要
 
@@ -50,7 +50,7 @@ Go、MySQL、Redis、Kafka；Outbox、本地事务、幂等消费、重试/死�
 - 订单与 `ORDER_CREATED` Outbox 在同一个 MySQL 本地事务内提交；
 - Kafka 采用至少一次投递，消费者用 `event_id`/业务唯一键保证副作用幂等；
 - 可恢复错误重试，超限进入死信；对账任务发现卡单、缺事件和金额不一致；
-- 下一步设计增长实验，不改变订单可靠性主线。
+- 订单可靠性主线独立于增长实验，增长只通过事件和 offer 快照接入。
 
 ## 增长实验摘要
 
@@ -61,3 +61,13 @@ Go、MySQL、Redis、Kafka；Outbox、本地事务、幂等消费、重试/死�
 - 营收指标消费可靠事件异步聚合，消费者必须幂等且可重放；
 - 回滚只停止未来新分流，不修改历史订单和奖励；
 - AI 生成 JSON 活动草稿，经过 Schema、权限、地区、时间、金额、模拟评估和人工审批后才能灰度。
+
+## 服务边界摘要
+
+- Room 拥有直播间元信息和热点读模型；Order 拥有订单、幂等、Outbox、模拟钱包账本和发放记录；Growth 拥有活动、版本、分组、预算和指标投影；
+- 第一版采用模块化单体，逻辑边界先于部署边界；
+- 服务不直接读写对方的表；Growth 消费订单事件建立自己的指标投影；
+- Order 不同步调用 Growth，使用带版本和签名的 offer 快照；
+- Kafka 事件统一包含 `event_id`、类型/版本、生产者、region、聚合 ID、时间和 trace ID；
+- 非核心服务故障不能拖垮订单事实链路；
+- 下一步统一订单、活动和 Outbox 状态机。
