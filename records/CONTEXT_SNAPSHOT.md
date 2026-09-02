@@ -31,7 +31,7 @@ Go、MySQL、Redis、Kafka；Outbox、本地事务、幂等消费、重试/死�
 
 ## 当前状态
 
-工作区初始化、`2.1.1 直播间和用户场景`、`2.1.2 礼物订单场景`、`2.1.3 增长实验场景`、`2.2.1 Room、Order、Growth 服务边界`、`2.2.2 关键状态机` 已完成，Go 最小程序测试通过。业务基线见 `docs/01-BUSINESS-REQUIREMENTS.md`，订单领域见 `docs/02-ORDER-DOMAIN.md`，增长实验见 `docs/03-GROWTH-EXPERIMENT.md`，服务边界见 `docs/04-SERVICE-BOUNDARIES.md`，状态机见 `docs/05-STATE-MACHINES.md`。由于沙箱限制，运行 Go 命令时使用 `GOCACHE=/private/tmp/livegrow-gocache`。下一步是 `2.3.1 30 秒、2 分钟、5 分钟项目讲解`。
+工作区初始化、`2.1.1 直播间和用户场景`、`2.1.2 礼物订单场景`、`2.1.3 增长实验场景`、`2.2.1 Room、Order、Growth 服务边界`、`2.2.2 关键状态机`、`2.3.1 30 秒、2 分钟、5 分钟项目讲解`、`2.3.2 一页架构图和订单时序图` 已完成，Go 最小程序测试通过。业务基线见 `docs/01-BUSINESS-REQUIREMENTS.md`，订单领域见 `docs/02-ORDER-DOMAIN.md`，增长实验见 `docs/03-GROWTH-EXPERIMENT.md`，服务边界见 `docs/04-SERVICE-BOUNDARIES.md`，状态机见 `docs/05-STATE-MACHINES.md`，面试讲解见 `docs/06-INTERVIEW-PITCH.md`，架构图见 `docs/07-ARCHITECTURE-DIAGRAMS.md`。由于沙箱限制，运行 Go 命令时使用 `GOCACHE=/private/tmp/livegrow-gocache`。下一步是 `3.1.1 配置、日志、错误和优雅退出`。
 
 ## 业务基线摘要
 
@@ -80,4 +80,14 @@ Go、MySQL、Redis、Kafka；Outbox、本地事务、幂等消费、重试/死�
 - 活动：`DRAFT → PENDING_REVIEW → APPROVED → GRAYING → ACTIVE`，可暂停、回滚或过期；
 - 领域状态机判断迁移是否合法，数据库版本号处理并发覆盖，审计历史记录原因；
 - 第 2 阶段复盘记录见 `records/reviews/PHASE-02-DOMAIN-MODELING.md`；
-- 下一步是项目讲解稿，然后将状态机和幂等规则转为 Go 代码与测试。
+- 第 2 阶段复盘已完成；当前优先将设计转为可运行 Go 代码与测试。
+
+## 面试讲解摘要
+
+- 30 秒：直播营收增长平台 + Go/MySQL/Redis/Kafka + Outbox/幂等 + AI 活动护栏；
+- 2 分钟：讲清 Room/Order/Growth、订单可靠受理、异步处理和稳定分流；
+- 5 分钟：展开服务边界、offer 快照、预算并发、故障隔离和 AI Code Review；
+- 必须区分已实现、已设计、待实现；不虚构生产规模或性能；
+- 高风险问题已有诚实回答模板；架构图和订单时序图已完成；
+- 第 2.3 阶段复盘记录见 `records/reviews/PHASE-2.3-INTERVIEW-MATERIALS.md`；
+- 下一步从讲解材料转向 Go 工程实现。
