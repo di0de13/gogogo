@@ -31,7 +31,7 @@ Go、MySQL、Redis、Kafka；Outbox、本地事务、幂等消费、重试/死�
 
 ## 当前状态
 
-工作区初始化、`2.1.1 直播间和用户场景`、`2.1.2 礼物订单场景`、`2.1.3 增长实验场景`、`2.2.1 Room、Order、Growth 服务边界`、`2.2.2 关键状态机`、`2.3.1 30 秒、2 分钟、5 分钟项目讲解`、`2.3.2 一页架构图和订单时序图` 已完成，Go 最小程序测试通过。业务基线见 `docs/01-BUSINESS-REQUIREMENTS.md`，订单领域见 `docs/02-ORDER-DOMAIN.md`，增长实验见 `docs/03-GROWTH-EXPERIMENT.md`，服务边界见 `docs/04-SERVICE-BOUNDARIES.md`，状态机见 `docs/05-STATE-MACHINES.md`，面试讲解见 `docs/06-INTERVIEW-PITCH.md`，架构图见 `docs/07-ARCHITECTURE-DIAGRAMS.md`。由于沙箱限制，运行 Go 命令时使用 `GOCACHE=/private/tmp/livegrow-gocache`。下一步是 `3.1.1 配置、日志、错误和优雅退出`。
+工作区初始化、`2.1.1 直播间和用户场景`、`2.1.2 礼物订单场景`、`2.1.3 增长实验场景`、`2.2.1 Room、Order、Growth 服务边界`、`2.2.2 关键状态机`、`2.3.1 30 秒、2 分钟、5 分钟项目讲解`、`2.3.2 一页架构图和订单时序图`、`3.1.1 配置、日志、错误和优雅退出` 已完成，Go 平台包测试通过。业务基线见 `docs/01-BUSINESS-REQUIREMENTS.md`，订单领域见 `docs/02-ORDER-DOMAIN.md`，增长实验见 `docs/03-GROWTH-EXPERIMENT.md`，服务边界见 `docs/04-SERVICE-BOUNDARIES.md`，状态机见 `docs/05-STATE-MACHINES.md`，面试讲解见 `docs/06-INTERVIEW-PITCH.md`，架构图见 `docs/07-ARCHITECTURE-DIAGRAMS.md`。由于沙箱限制，运行 Go 命令时使用 `GOCACHE=/private/tmp/livegrow-gocache`；本地 TCP 监听验证需在本机或 CI 补跑。下一步是 `3.1.2 HTTP API、请求校验和统一响应`。
 
 ## 业务基线摘要
 
@@ -91,3 +91,13 @@ Go、MySQL、Redis、Kafka；Outbox、本地事务、幂等消费、重试/死�
 - 高风险问题已有诚实回答模板；架构图和订单时序图已完成；
 - 第 2.3 阶段复盘记录见 `records/reviews/PHASE-2.3-INTERVIEW-MATERIALS.md`；
 - 下一步从讲解材料转向 Go 工程实现。
+
+## 工程底座摘要
+
+- 配置：环境变量 + 默认值 + duration/日志级别校验；
+- 日志：标准库 `log/slog` JSON 结构化输出，支持 source；
+- 错误：客户端安全消息与内部 cause 分离；
+- 生命周期：HTTP server 统一封装，支持 SIGINT/SIGTERM 和超时 Shutdown；
+- 健康检查：`/healthz`；
+- 测试：平台包单测通过；当前沙箱禁止 TCP 监听，HTTP 集成验证待在本机或 CI 执行；
+- 下一步实现统一 HTTP 响应、请求 ID 和参数校验。

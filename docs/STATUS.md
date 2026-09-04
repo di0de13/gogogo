@@ -33,14 +33,17 @@
 - 完成 `2.3.2`：制作一页架构图、正常/失败订单时序图和白板讲解顺序；
 - 产出架构图文档：`docs/07-ARCHITECTURE-DIAGRAMS.md`；
 - 完成第 2.3 阶段复盘，记录见 `records/reviews/PHASE-2.3-INTERVIEW-MATERIALS.md`。
+- 完成 `3.1.1`：实现配置加载与校验、JSON 结构化日志、客户端安全错误模型、健康检查和信号驱动优雅退出；
+- 新增 Go 平台包：`internal/platform/config`、`logging`、`apperrors`、`httpserver`；
+- `GOCACHE=/private/tmp/livegrow-gocache go test ./...` 通过；本地 TCP 监听受沙箱限制，HTTP 进程启动验证记录为环境阻断。
 
 ## 当前工作单元
 
-`2.3.2 一页架构图和订单时序图`：已完成。
+`3.1.1 配置、日志、错误和优雅退出`：已完成。
 
 ## 下一单元
 
-`3.1.1 配置、日志、错误和优雅退出`：开始把模块化单体骨架转成可运行的 Go 工程。
+`3.1.2 HTTP API、请求校验和统一响应`：实现第一个业务无关的 HTTP API 层，为 Room/Order/Growth 接口接入做准备。
 
 ## 当前风险
 
