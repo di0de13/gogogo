@@ -114,9 +114,19 @@
 
 产物：`project/livegrow/internal/platform/{config,logging,apperrors,httpserver}`，包含配置校验、结构化日志、统一错误模型、健康检查和信号驱动优雅退出。
 
-#### 3.1.2 HTTP API、请求校验和统一响应（下一步）
+#### 3.1.2 HTTP API、请求校验和统一响应（已完成）
 
-#### 3.1.3 分层结构与依赖注入（待办）
+产物：`project/livegrow/internal/platform/httpapi`，包含请求 ID、访问日志、统一 JSON 响应、错误映射、严格 JSON 解码和 Validator 接口。
+
+#### 3.1.3 分层结构与依赖注入（已完成）
+
+产物：`project/livegrow/internal/{room,order,growth}`，建立 domain/application/adapter 边界；Room 提供内存 adapter 垂直切片，Order/Growth 先定义领域端口。
+
+#### 3.1.4 工程命令和本地开发配置（已完成）
+
+产物：`project/livegrow/Makefile`、`.env.example` 和 `docs/08-DEV-WORKFLOW.md`，统一格式化、测试、静态检查、覆盖率和运行命令。
+
+本阶段复盘：`records/reviews/PHASE-03.1-GO-FOUNDATION.md`。
 
 ### 3.2 并发和性能
 

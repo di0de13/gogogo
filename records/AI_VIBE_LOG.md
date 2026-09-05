@@ -383,3 +383,175 @@ AI 最适合辅助拆解、生成样板、补测试和比较方案；核心边�
 ### 下一步
 
 进入 `3.1.2 HTTP API、请求校验和统一响应`，实现统一响应格式、请求 ID 和业务无关的 HTTP 处理层。
+
+## Log 0010：HTTP API 传输层
+
+日期：2026-09-04
+
+### 用户反馈
+
+用户确认继续推进工程环节。
+
+### 本次 AI 协作任务
+
+- 实现请求 ID 中间件；
+- 实现结构化访问日志；
+- 实现统一成功和错误 JSON 响应；
+- 实现严格 JSON 解码和可复用请求校验；
+- 将健康检查接入统一传输层。
+
+### AI 做了什么
+
+- 新增 `internal/platform/httpapi`；
+- 支持复用合法 `X-Request-ID`，对缺失或不安全值生成新的随机 ID；
+- 使用 `Response`/`Error` 信封统一返回 `data`、`error` 和 `request_id`；
+- 将未知 JSON 字段、多 JSON 值和非法请求映射为客户端安全错误；
+- 用 `Validator` 接口让领域请求自行提供校验规则。
+
+### 人工判断与取舍
+
+- 请求 ID 只接受安全字符，避免把任意 Header 内容写入日志；
+- 错误响应只暴露稳定错误码和安全消息，内部 cause 保留给日志或上层处理；
+- 严格 JSON 解码有利于尽早发现客户端拼写错误，但未来兼容旧客户端时需要显式评估；
+- 传输层不包含业务规则，避免 HTTP handler 直接操作订单或数据库。
+
+### 验收结果
+
+- `GOCACHE=/private/tmp/livegrow-gocache go test ./...` 通过；
+- `GOCACHE=/private/tmp/livegrow-gocache go vet ./...` 通过；
+- httptest 覆盖请求 ID、错误脱敏、JSON 解码、参数校验和访问日志状态记录。
+
+### AI 失败/风险记录
+
+初版错误响应实现曾先写入成功响应再尝试替换错误体，这在 HTTP 已发送 Header 后不可行。修正为统一走 `WriteAppError`，并增加响应体断言测试。
+
+### 面试亮点
+
+传输层统一了请求追踪、错误契约和输入边界，使领域服务不需要重复处理 HTTP 细节；请求 ID 还能把一次请求串联到后续 Kafka 事件和日志中。
+
+### 下一步
+
+进入 `3.1.3 分层结构与依赖注入`，为 Room、Order、Growth 建立可测试的 domain/application/adapter 结构。
+
+## Log 0011：分层结构与依赖注入
+
+日期：2026-09-04
+
+### 用户反馈
+
+用户确认继续推进工程环节。
+
+### 本次 AI 协作任务
+
+- 为 Room、Order、Growth 建立 domain/application/adapter 边界；
+- 用 Room 完成一个可运行的内存仓储垂直切片；
+- 为 Order/Growth 定义领域侧端口，准备后续 MySQL、Kafka 和指标适配器；
+- 验证依赖注入和可替换测试依赖。
+
+### AI 做了什么
+
+- Room domain 定义实体、校验和可用性规则；
+- Room application 依赖 `RoomRepository` 接口，不依赖具体存储；
+- Room memory adapter 使用 `sync.RWMutex` 实现可替换仓储；
+- Order domain 定义 Repository/EventPublisher 端口；
+- Growth domain 定义 CampaignRepository/MetricsSink 端口；
+- 为 Room application 和 memory adapter 增加测试。
+
+### 人工判断与取舍
+
+- 不为 Order/Growth 编写没有业务行为的空 Service，先建立真正有用的端口；
+- domain 不依赖 HTTP、MySQL、Redis 或 Kafka；
+- application 只依赖接口，测试用 fake repository 注入；
+- memory adapter 仅用于当前垂直切片和单元测试，不伪装成生产存储。
+
+### 验收结果
+
+- `GOCACHE=/private/tmp/livegrow-gocache go test ./...` 通过；
+- `GOCACHE=/private/tmp/livegrow-gocache go vet ./...` 通过；
+- Room application、memory adapter 和 context 取消路径均有测试。
+
+### AI 失败/风险记录
+
+本轮没有引入外部依赖；主要风险是过早生成大量空目录。通过“Room 完整垂直切片 + Order/Growth 端口”的方式，保留了真实可测代码，同时控制范围。
+
+### 面试亮点
+
+我先定义领域端口，再选择存储和消息实现。这样可以用内存 fake 测试业务用例，未来替换为 MySQL/Kafka adapter 时不需要改 domain 规则。
+
+### 下一步
+
+进入 `3.1.4 工程命令和本地开发配置`，固化 test、vet、run、coverage 命令，再开始关键状态机代码。
+
+## Log 0012：工程命令和质量门禁
+
+日期：2026-09-05
+
+### 用户反馈
+
+用户确认继续推进。
+
+### 本次 AI 协作任务
+
+- 固化 Go 项目的格式化、测试、静态分析、覆盖率和运行命令；
+- 统一处理沙箱中的 Go build cache；
+- 提供安全的本地配置示例；
+- 定义 AI 生成代码的最小质量门禁。
+
+### AI 做了什么
+
+- 新增 `project/livegrow/Makefile`；
+- 新增 `project/livegrow/.env.example`；
+- 创建 `docs/08-DEV-WORKFLOW.md`；
+- 把 `make check` 定义为 `fmt-check + test + vet`；
+- 把并发、状态和存储改动的 race、幂等和故障测试列为额外门禁。
+
+### 人工判断与取舍
+
+- Makefile 默认设置允许写入的 `GOCACHE`，但允许开发者覆盖；
+- `.env.example` 只保存安全示例，不保存密钥；
+- `make check` 只证明工程基本面通过，不等同于业务正确；
+- 当前沙箱不能绑定 TCP，`make run` 的真实端口验证仍在本机或 CI 执行。
+
+### 验收结果
+
+- `make check` 通过；
+- `make coverage` 通过并生成 `coverage.out`；
+- Go 测试和 vet 继续通过。
+
+### AI 失败/风险记录
+
+本轮没有新增业务逻辑；主要风险是把 Makefile 写成依赖复杂 shell 特性的脚本。当前命令保持简单，便于本机、CI 和面试官复现。
+
+### 面试亮点
+
+我把 AI 辅助开发纳入可复现的质量门禁：每次改动先格式化，再执行测试和静态检查；涉及并发或状态时增加 race 和故障验证。
+
+### 下一步
+
+进入 `3.2.1 goroutine、context、锁和 channel 示例`，用小型可运行示例补齐 Go 并发基础。
+
+## Log 0013：3.1 工程骨架阶段复盘
+
+日期：2026-09-05
+
+### 本次复盘
+
+按 `docs/REVIEW-PROTOCOL.md` 对 3.1 阶段进行正式复盘，检查配置、HTTP、分层、质量门禁、AI 工作流和实现证据。
+
+### 结论
+
+- 工程底座已经可运行、可测试、可替换；
+- `make check` 和 `make coverage` 可复现；
+- 总语句覆盖率为 61.4%，但主程序和 HTTP server 的部分路径仍需本机集成测试；
+- 设计到代码的主要缺口已从工程骨架转移到订单状态机、幂等和分布式链路。
+
+### AI 工作流改进
+
+- 后续生成订单代码前，先提供不变量和失败时序；
+- 每次并发相关改动都执行 race 检测；
+- 继续区分“工具通过”“测试通过”和“业务正确”三个层次；
+- 覆盖率只作为证据之一，不为了数字牺牲测试质量。
+
+### 下一步
+
+进入 `3.2.1 goroutine、context、锁和 channel 示例`。

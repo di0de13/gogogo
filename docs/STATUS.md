@@ -36,14 +36,22 @@
 - 完成 `3.1.1`：实现配置加载与校验、JSON 结构化日志、客户端安全错误模型、健康检查和信号驱动优雅退出；
 - 新增 Go 平台包：`internal/platform/config`、`logging`、`apperrors`、`httpserver`；
 - `GOCACHE=/private/tmp/livegrow-gocache go test ./...` 通过；本地 TCP 监听受沙箱限制，HTTP 进程启动验证记录为环境阻断。
+- 完成 `3.1.2`：实现请求 ID、访问日志、统一 JSON 响应、错误到 HTTP 状态码映射、严格 JSON 解码和 Validator 接口；
+- 新增 Go HTTP API 包：`internal/platform/httpapi`；
+- `GOCACHE=/private/tmp/livegrow-gocache go test ./...` 与 `go vet ./...` 通过。
+- 完成 `3.1.3`：建立 Room、Order、Growth 的 domain/application/adapter 边界；Room 完成内存仓储垂直切片，Order/Growth 定义基础领域端口；
+- `GOCACHE=/private/tmp/livegrow-gocache go test ./...` 与 `go vet ./...` 继续通过。
+- 完成 `3.1.4`：新增 Makefile、`.env.example` 和本地开发/质量门禁文档，统一 fmt、test、vet、coverage、check、run；
+- `make check`、`make coverage` 验收通过。
+- 完成第 3.1 阶段复盘，记录见 `records/reviews/PHASE-03.1-GO-FOUNDATION.md`。
 
 ## 当前工作单元
 
-`3.1.1 配置、日志、错误和优雅退出`：已完成。
+`3.1.4 工程命令和本地开发配置`：已完成，第 3.1 阶段已复盘。
 
 ## 下一单元
 
-`3.1.2 HTTP API、请求校验和统一响应`：实现第一个业务无关的 HTTP API 层，为 Room/Order/Growth 接口接入做准备。
+`3.2.1 goroutine、context、锁和 channel 示例`：通过可测试示例补齐 Go 并发基础。
 
 ## 当前风险
 

@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"livegrow/internal/platform/config"
+	"livegrow/internal/platform/httpapi"
 	"livegrow/internal/platform/httpserver"
 	"livegrow/internal/platform/logging"
 )
@@ -29,13 +30,12 @@ func run() error {
 	}
 	logger := logging.New(cfg.LogLevel, os.Stdout).With("service", "livegrow", "version", Version, "env", cfg.Environment)
 	mux := http.NewServeMux()
-	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"status":"ok"}`))
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		httpapi.WriteJSON(w, http.StatusOK, httpapi.RequestID(r), map[string]string{"status": "ok"})
 	})
 
-	server := httpserver.New(cfg.HTTPAddr, mux, logger)
+	rootHandler := httpapi.WithRequestID(httpapi.WithAccessLog(logger, mux))
+	server := httpserver.New(cfg.HTTPAddr, rootHandler, logger)
 	serverErr := make(chan error, 1)
 	go func() { serverErr <- server.Start() }()
 

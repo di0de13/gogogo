@@ -31,7 +31,7 @@ Go、MySQL、Redis、Kafka；Outbox、本地事务、幂等消费、重试/死�
 
 ## 当前状态
 
-工作区初始化、`2.1.1 直播间和用户场景`、`2.1.2 礼物订单场景`、`2.1.3 增长实验场景`、`2.2.1 Room、Order、Growth 服务边界`、`2.2.2 关键状态机`、`2.3.1 30 秒、2 分钟、5 分钟项目讲解`、`2.3.2 一页架构图和订单时序图`、`3.1.1 配置、日志、错误和优雅退出` 已完成，Go 平台包测试通过。业务基线见 `docs/01-BUSINESS-REQUIREMENTS.md`，订单领域见 `docs/02-ORDER-DOMAIN.md`，增长实验见 `docs/03-GROWTH-EXPERIMENT.md`，服务边界见 `docs/04-SERVICE-BOUNDARIES.md`，状态机见 `docs/05-STATE-MACHINES.md`，面试讲解见 `docs/06-INTERVIEW-PITCH.md`，架构图见 `docs/07-ARCHITECTURE-DIAGRAMS.md`。由于沙箱限制，运行 Go 命令时使用 `GOCACHE=/private/tmp/livegrow-gocache`；本地 TCP 监听验证需在本机或 CI 补跑。下一步是 `3.1.2 HTTP API、请求校验和统一响应`。
+工作区初始化、`2.1.1 直播间和用户场景`、`2.1.2 礼物订单场景`、`2.1.3 增长实验场景`、`2.2.1 Room、Order、Growth 服务边界`、`2.2.2 关键状态机`、`2.3.1 30 秒、2 分钟、5 分钟项目讲解`、`2.3.2 一页架构图和订单时序图`、`3.1.1 配置、日志、错误和优雅退出`、`3.1.2 HTTP API、请求校验和统一响应`、`3.1.3 分层结构与依赖注入`、`3.1.4 工程命令和本地开发配置` 已完成，Go 平台和领域包测试通过。业务基线见 `docs/01-BUSINESS-REQUIREMENTS.md`，订单领域见 `docs/02-ORDER-DOMAIN.md`，增长实验见 `docs/03-GROWTH-EXPERIMENT.md`，服务边界见 `docs/04-SERVICE-BOUNDARIES.md`，状态机见 `docs/05-STATE-MACHINES.md`，面试讲解见 `docs/06-INTERVIEW-PITCH.md`，架构图见 `docs/07-ARCHITECTURE-DIAGRAMS.md`。由于沙箱限制，运行 Go 命令时使用 `GOCACHE=/private/tmp/livegrow-gocache`；本地 TCP 监听验证需在本机或 CI 补跑。下一步是 `3.2.1 goroutine、context、锁和 channel 示例`。
 
 ## 业务基线摘要
 
@@ -101,3 +101,41 @@ Go、MySQL、Redis、Kafka；Outbox、本地事务、幂等消费、重试/死�
 - 健康检查：`/healthz`；
 - 测试：平台包单测通过；当前沙箱禁止 TCP 监听，HTTP 集成验证待在本机或 CI 执行；
 - 下一步实现统一 HTTP 响应、请求 ID 和参数校验。
+
+## HTTP API 摘要
+
+- `X-Request-ID` 中间件：复用安全 ID，否则生成随机 ID并写回响应；
+- 统一响应：`data`、`error`、`request_id`；
+- 错误响应只暴露稳定 code/message，不泄露内部 cause；
+- `DecodeJSON` 限制 1 MiB、拒绝未知字段和多 JSON 值；
+- `Validator` 接口承载请求级业务无关校验；
+- 访问日志记录 request ID、方法、路径、状态和耗时；
+- 下一步建立 domain/application/adapter 分层。
+
+## 分层实现摘要
+
+- Room：domain 实体和校验，application 依赖 `RoomRepository`，memory adapter 可注入且线程安全；
+- Order：定义 Repository、EventPublisher 领域端口；
+- Growth：定义 CampaignRepository、MetricsSink 领域端口；
+- domain 不依赖基础设施，application 不依赖具体存储，adapter 负责实现；
+- 当前 memory adapter 仅用于原型和测试，后续替换为 MySQL/Kafka adapter；
+- 工程命令已固化，下一步用并发示例和 race 检测补齐 Go 并发基础。
+
+## 工程命令摘要
+
+- `make fmt`：格式化 Go 文件；
+- `make fmt-check`：检查格式；
+- `make test` / `make vet`：测试和静态分析；
+- `make coverage`：生成覆盖率报告；
+- `make check`：格式检查 + 测试 + vet；
+- `make run`：启动服务；
+- 默认 `GOCACHE=/private/tmp/livegrow-gocache`，可通过 Make 变量覆盖；
+- `docs/08-DEV-WORKFLOW.md` 记录 AI 代码质量门禁。
+
+## 3.1 阶段复盘摘要
+
+- 3.1 工程骨架已完成并复盘，记录见 `records/reviews/PHASE-03.1-GO-FOUNDATION.md`；
+- `make check` 和 `make coverage` 通过，总语句覆盖率 61.4%；
+- 平台包、HTTP API、Room 注入切片均有测试；
+- TCP 监听受沙箱限制，本机/CI 集成测试待补；
+- 下一步优先 Go 并发示例、race 检测，然后实现订单状态机和幂等。
